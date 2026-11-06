@@ -3,12 +3,12 @@ import asyncio
 import httpx
 
 
-url = "http://127.0.0.1:8000/atm/Withdraw?ammount=100"
+url = "http://127.0.0.1:8000/atm/Withdraw"
 
-async def hit_point(client,id):
+async def hit_point(client,id,data):
 
     try:
-       response = await client.patch(url)
+       response = await client.patch(url, json = data)
        print(response)
        print(f"Req_id:{id}, status:{response.status_code}, {response.text}")
 
@@ -19,9 +19,18 @@ async def main():
 
     async with httpx.AsyncClient() as client:
 
-      tasks = [hit_point(client,i) for i in range(1,11)]
+      ammount = 10
+      tasks = []
 
-      await asyncio.gather(*tasks )
+      for i in range(1,11):
+
+         ammount +=5
+
+         data = {'id':1, 'ammount':ammount}
+
+         tasks.append(hit_point(client,i,data))
+
+      await asyncio.gather(*tasks)
 
 if __name__ == "__main__":
    print("running")

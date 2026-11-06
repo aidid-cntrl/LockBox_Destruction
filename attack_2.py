@@ -3,13 +3,12 @@ import asyncio
 import httpx
 
 
-url =  "http://127.0.0.1:8000/debt/Payment?account_id=1&payment=50"
+url =  "http://127.0.0.1:8000/debt/Payment"
 
-async def hit_point(client,request_id):
+async def hit_point(client,request_id,data):
 
     try:
-        print("in try")
-        response = await client.patch(url)
+        response = await client.patch(url, json=data)
         print(response)
         print(f"respose_id:{request_id}, status:{response.status_code}, response_message:{response.text}")
 
@@ -22,7 +21,9 @@ async def main():
 
     async with httpx.AsyncClient() as client:
 
-        tasks = [hit_point(client,i)for i in range(1,11)]
+        data = {'id':3, 'payment':50}
+
+        tasks = [hit_point(client,i,data)for i in range(1,11)]
 
         await asyncio.gather(*tasks)
 

@@ -1,35 +1,28 @@
 import asyncio
-
-from fastapi import APIRouter,HTTPException
-from numpy import double
-
+from fastapi import APIRouter, Depends,HTTPException
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from db import get_db
+from models import Account, Debt, incoming_debt_payment
 
 router = APIRouter(prefix ='/debt',tags=['DEBT'])
 
-balance = 250
-debt = 500
-id = 1
-paid = False
-
 @router.patch("/Payment")
-async def debt_payment(account_id:int, payment:float):
-    print("came to endpoint 1")
+async def debt_payment(data:incoming_debt_payment, db:AsyncSession = Depends(get_db)):
 
-    global id,balance,debt,paid
+    debt_account = await db.scalar(select(Debt).where(Debt.id==data.id).with_for_update())
+    main_account = await db.scalar(select(Account).where(Debt.id==data.id).with_for_update())
 
-    if id != account_id or paid is True or balance <=0:
 
-        print("came to endpoint 2")
+    if not debt_account:
+        raise HTTPException(status_code=404, detail=f"no account found, debt")
 
-        raise HTTPException(status_code=404, detail=f"something went wrong, debt:{debt}, balance{balance},paid:{paid}")
-    
     else:
-        print("came to endpoint 3")
-        await asyncio.sleep(2)
-        balance -= payment
-        debt -= payment
+        if data.payment<=0:
+           raise HTTPException(status_code=404, detail=f"payment cannot be 0 or negative")
+        else:
+           debt_account.overdraft += data.payment
+           main_account.balance += data.payment
 
-        if debt == 0:
-           paid = True
- 
-        return{"message":"successfully paid the debt", "current debt":debt, "current balance":balance}
+           await db.commit()
+           return{"message":"successfully paid the debt", "current debt": debt_account.overdraft, "current balance":main_account.balance}
