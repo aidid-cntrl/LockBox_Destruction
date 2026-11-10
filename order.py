@@ -47,8 +47,9 @@ async def order_payment(data:incoming_order, db:AsyncSession = Depends(get_db)):
 
 
 @router.get("/orders")
-async def orders(id:viewing_order, db: AsyncSession = Depends(get_db)):
+async def orders(data:viewing_order, db: AsyncSession = Depends(get_db)):
 
+    account = await db.scalar(select(Order).where(Order.id==data.id).with_for_update())
 
     if not account:
             raise HTTPException(status_code=404, detail="no account found")
@@ -86,6 +87,9 @@ async def confirmation(data,db):
                 new_debt= Debt(id=data.id, overdraft=account.balance)
                 db.add(new_debt)
                 await db.refresh(new_debt)
+                await db.commit()
+
+
 
         elif (data.overdraft is True) & (account.balance>=0):
                 new_order = Order(id=data.id, product=data.product, metric=data.metric,

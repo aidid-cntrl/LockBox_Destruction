@@ -31,7 +31,7 @@ async def main():
     async with httpx.AsyncClient() as client:
 
        payment = 50.0
-       data = {'id':3, 'product':'chips','quantity':5, 'metric':'kg','payment':payment, 'overdraft':True}
+       data = {'id':1, 'product':'chips','quantity':5, 'metric':'kg','payment':payment, 'overdraft':True}
 
        tasks = [hit_payment(client,data,i)for i in range(1,11)]
 

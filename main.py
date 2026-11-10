@@ -7,13 +7,14 @@ from fastapi import FastAPI
 import atm
 import debt
 import order
-from db import init_db
+from db import init_db,engine
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db()
+    #await init_db()
     yield
+    await engine.dispose()
 
 app = FastAPI(lifespan=lifespan)
 

@@ -22,7 +22,11 @@ async def debt_payment(data:incoming_debt_payment, db:AsyncSession = Depends(get
            raise HTTPException(status_code=404, detail=f"payment cannot be 0 or negative")
         else:
            debt_account.overdraft += data.payment
-           main_account.balance += data.payment
+
+           if not main_account:
+               raise HTTPException(status_code=404, detail=f"account has been deactivated")
+           else:
+                main_account.balance += data.payment
 
            await db.commit()
            return{"message":"successfully paid the debt", "current debt": debt_account.overdraft, "current balance":main_account.balance}

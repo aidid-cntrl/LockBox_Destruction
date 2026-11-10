@@ -1,6 +1,6 @@
 from decimal import Decimal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import ForeignKey, Numeric
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -26,8 +26,7 @@ class outgoing_atm_request(BaseModel):
 
     balance: Decimal
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class Order(Base):
     __tablename__ = "orders"
@@ -61,8 +60,7 @@ class outgoing_order(BaseModel):
         metric: str = Field(min_length=2)
         payment: Decimal = Field(gt=0)
 
-        class Config:
-            from_attributes = True
+        model_config = ConfigDict(from_attributes=True)
 
 class Debt(Base):
     __tablename__="debts"
@@ -80,8 +78,7 @@ class outgoing_debt_payment(BaseModel):
 
     debt: Decimal
 
-    class Config:
-                from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 

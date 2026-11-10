@@ -10,13 +10,13 @@ router = APIRouter(prefix='/atm', tags=['ATM'])
 @router.put("/Create_account")
 async def create_account(data:creating_account, db: AsyncSession = Depends(get_db)):
 
-    account = (await db.execute(select(Account).where(data.id==Account.id)).with_for_update()).scalar_one_or_none()
+    account = await db.scalar(select(Account).where(Account.id==data.id).with_for_update())
 
     if account is None:
         new_account = Account(id=data.id, balance=data.balance)
         db.add(new_account)
         await db.commit()
-        await db.refresh(Account)
+        await db.refresh(new_account)
 
     return {"message":"successfully created account", "details":data}
     
@@ -24,10 +24,9 @@ async def create_account(data:creating_account, db: AsyncSession = Depends(get_d
 @router.patch("/Withdraw")
 async def withdraw_funds(data:incoming_atm_request, db: AsyncSession = Depends(get_db)):
 
-    result = await db.execute(select(Account).where(data.id==Account.id).with_for_update())
-    account = result.scalar_one_or_none()
+    account = await db.scalar(select(Account).where(Account.id==data.id).with_for_update())
 
-    if account.id is None:
+    if account is None:
         raise HTTPException(status_code=404, detail ="no account matched")
 
     else:
