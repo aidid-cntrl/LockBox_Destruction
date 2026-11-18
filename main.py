@@ -2,11 +2,9 @@
 from contextlib import asynccontextmanager
 from unittest.mock import Base
 
-from fastapi import FastAPI
+from fastapi import FastAPI 
+from routers import transaction, users, wallets
 
-import atm
-import debt
-import order
 from db import init_db,engine
 
 
@@ -18,6 +16,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-app.include_router(atm.router)
-app.include_router(debt.router)
-app.include_router(order.router)
+app.include_router(users.router)
+app.include_router(wallets.router)
+app.include_router(transaction.router)
+
