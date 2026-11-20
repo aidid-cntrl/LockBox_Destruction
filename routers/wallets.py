@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from db import get_db
 from models import Users, Wallets
@@ -16,26 +17,19 @@ async def add_money(data:incoming_wallet_request, db:AsyncSession = Depends(get_
 
     if account is None:
         raise HTTPException(status_code=404, detail="Account not found")
-
-    elif verify_password(data.password,account.password) is False:
-        raise HTTPException(status_code=404, detail="Password doesnt match")
     
     else:
-
         wallets_account = await db.scalar(select(Wallets).where(Wallets.account_id==data.id).with_for_update())
 
-        if wallets_account:
+        try:
             wallets_account.balance += data.payment # type: ignore
             await db.commit()
-
-        else:
-            wallets_account = Wallets(account_id=data.id, balance=data.payment)
-
-            db.add(wallets_account)
-            await db.commit()
-            await db.refresh(wallets_account)
-
-    return {f"Succesfully added money to account, current balance:{wallets_account.balance}, id:{wallets_account.account_id}"}
+ 
+        except SQLAlchemyError:
+                await db.rollback()
+                raise HTTPException(status_code=500, detail="Could not update balance")
+        
+        return {f"Succesfully added money to account, current balance:{wallets_account.balance}, id:{wallets_account.account_id}"} # type: ignore
 
 @router.get("/wallet_details")
 async def wallet_details(id:int, db:AsyncSession = Depends(get_db), account:Users = Depends(get_current_user)):
