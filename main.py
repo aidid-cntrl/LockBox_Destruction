@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from unittest.mock import Base
 
 from fastapi import FastAPI 
-from routers import transaction, users, wallets
+from routers import transaction, users, wallets, login
 
 from db import init_db,engine
 
@@ -19,4 +19,4 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(users.router)
 app.include_router(wallets.router)
 app.include_router(transaction.router)
-
+app.include_router(login.router)

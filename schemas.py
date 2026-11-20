@@ -69,4 +69,10 @@ class outgoing_transfer_request(BaseModel):
 
         model_config = ConfigDict(from_attributes=True)
 
+class login(BaseModel):
+    model_config = ConfigDict(regex_engine="python-re")
 
+    email: EmailStr
+    password: str = Field(
+        pattern=r"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
+        description="Password must contain minimum 8 charecters including one uppcase, one lowercase, one digit, one special charecter")

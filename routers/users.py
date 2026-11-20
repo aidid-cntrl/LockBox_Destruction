@@ -35,17 +35,3 @@ async def create_account(data: incoming_account_request, db:AsyncSession = Depen
         await db.refresh(new_account)
 
         return {f"Successfully created account, id:{new_account.id}, email:{new_account.email}, created at:{new_account.created_at}"}
-
-@router.get("/account_details")
-async def get_account(id:int, db:AsyncSession = Depends(get_db)):
-
-    account = await db.scalar(select(Users).where(Users.id==id).with_for_update())
-
-    if account is None:
-        raise HTTPException(status_code=404, detail="Account not found")
-    
-    else:
-        return account
-
-
-

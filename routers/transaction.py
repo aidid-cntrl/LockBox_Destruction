@@ -8,16 +8,14 @@ from models import Transfers, Users, Wallets
 from schemas import incoming_transfer_request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from oauth2 import get_password_hash, verify_password
+from oauth2 import get_current_user, get_password_hash, verify_password
 
 
 router = APIRouter(prefix='/transaction',tags=['Transaction'])
 
 @router.post("/send_money")
-async def send_money(data:incoming_transfer_request, db:AsyncSession = Depends(get_db)):
+async def send_money(data:incoming_transfer_request, db:AsyncSession = Depends(get_db), sendee_account:Users = Depends(get_current_user)):
 
-
-    sendee_account = await db.scalar(select(Users).where((Users.id==data.id)&(Users.email==data.email)).with_for_update())
     receiver_account = await db.scalar(select(Users).where((Users.id==data.transfer_account_id)&(Users.email==data.transfer_account_email)).with_for_update())
 
     if sendee_account is None:
