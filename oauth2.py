@@ -2,6 +2,7 @@
 
 import datetime
 import os
+from sqlite3 import IntegrityError
 
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
@@ -20,12 +21,13 @@ ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(ACCESS_TOKEN_EXPIRE_MINUTES) # type: ignore
 
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 async def get_user(db,email):
 
-  user = await db.scalar(select(Users).where(Users.email==email).with_for_update())
+  user = await db.scalar(select(Users).where(Users.email==email))
 
   return user
 
@@ -61,10 +63,15 @@ async def create_token(data:dict, expire_time):
    return token
 
 async def get_current_user(token:str = Depends(oauth2_scheme),db:AsyncSession = Depends(get_db)):
-   
-   data = jwt.decode(token,SECRET_KEY, algorithms=ALGORITHM)
 
-   user = await get_user(db,data['sub'])
+   try:
+      data = jwt.decode(token,SECRET_KEY, algorithms=[ALGORITHM]) # type: ignore
+
+      user = await get_user(db,data['sub'])
+
+   except jwt.InvalidTokenError:
+
+      raise HTTPException(status_code=401, detail="Unathorized credentials")
 
    if not user:
       raise HTTPException(status_code=404, detail="token doesnt work")

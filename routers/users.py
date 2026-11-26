@@ -2,7 +2,8 @@
 from sqlite3 import IntegrityError
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select 
+from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError 
 from db import get_db
 from models import Users, Wallets
 from schemas import incoming_account_request
@@ -40,7 +41,7 @@ async def create_account(data: incoming_account_request, db:AsyncSession = Depen
             await db.commit()
             await db.refresh(wallets_account)
 
-        except IntegrityError:
+        except SQLAlchemyError:
             await db.rollback()
             raise HTTPException(status_code=500, detail="Could not register account")
 

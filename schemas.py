@@ -50,13 +50,8 @@ class outgoing_wallet_request(BaseModel):
 class incoming_transfer_request (BaseModel):
      
      model_config = ConfigDict(regex_engine="python-re")
-     id: int
-     email: str
      transfer_account_id:int
      transfer_account_email:str
-     password: str = Field(
-        pattern=r"^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
-        description="Password must contain minimum 8 charecters including one uppcase, one lowercase, one digit, one special charecter")
      metric: str = Field(min_length=1, default="$")
      payment: Decimal = Field(gt=0)
 

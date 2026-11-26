@@ -1,13 +1,13 @@
 
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from db import get_db
 from models import Users, Wallets
 from schemas import incoming_wallet_request
-from oauth2 import  get_current_user, verify_password
+from oauth2 import  get_current_user
 
 
 router = APIRouter(prefix='/wallets', tags=['Wallets'])
@@ -19,10 +19,10 @@ async def add_money(data:incoming_wallet_request, db:AsyncSession = Depends(get_
         raise HTTPException(status_code=404, detail="Account not found")
     
     else:
-        wallets_account = await db.scalar(select(Wallets).where(Wallets.account_id==data.id).with_for_update())
-
         try:
-            wallets_account.balance += data.payment # type: ignore
+            wallets_account = await db.scalar(update(Wallets)
+                                              .where(Wallets.account_id==account.id)
+                                              .values(balance=Wallets.balance+data.payment).returning(Wallets))
             await db.commit()
  
         except SQLAlchemyError:
@@ -38,7 +38,7 @@ async def wallet_details(id:int, db:AsyncSession = Depends(get_db), account:User
             raise HTTPException(status_code=404, detail="Account not found")
     
     else:
-        wallets_account = await db.scalar(select(Wallets).where(Wallets.account_id==id).with_for_update())
+        wallets_account = await db.scalar(select(Wallets).where(Wallets.account_id==account.id))
     
         if wallets_account is None:
                 raise HTTPException(status_code=404, detail="No money in account add money")
