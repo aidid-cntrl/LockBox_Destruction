@@ -34,5 +34,5 @@ class Transfers(Base):
     metric : Mapped[str] = mapped_column(String(10), default='$')
     payment : Mapped[float] = mapped_column(Numeric(10,2), default=0)
     processed_at:Mapped[datetime.datetime] = mapped_column(DateTime(timezone=True) ,server_default=func.now())
-
+    idempotency_key: Mapped[str] = mapped_column(nullable=True, unique=True)
     success: Mapped[bool] = mapped_column(default=False)

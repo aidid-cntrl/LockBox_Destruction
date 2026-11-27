@@ -14,23 +14,19 @@ from db import get_db
 from models import Users
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES")
 
 ACCESS_TOKEN_EXPIRE_MINUTES = int(ACCESS_TOKEN_EXPIRE_MINUTES) # type: ignore
 
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
 
 async def get_user(db,email):
 
   user = await db.scalar(select(Users).where(Users.email==email))
 
   return user
-
 
 async def authenticate_user(db,data):
 
@@ -52,7 +48,6 @@ def verify_password(plain_password, password):
 
     return password_hash.verify(plain_password, password)
 
-      
 async def create_token(data:dict, expire_time):
 
    expire_time_delta = datetime.datetime.now(datetime.UTC) + expire_time
@@ -78,9 +73,7 @@ async def get_current_user(token:str = Depends(oauth2_scheme),db:AsyncSession = 
    else:
       return user
 
-   
 def get_password_hash(password):
    hashed_password = password_hash.hash(password)
    return hashed_password
    
-

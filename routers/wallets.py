@@ -9,7 +9,6 @@ from models import Users, Wallets
 from schemas import incoming_wallet_request
 from oauth2 import  get_current_user
 
-
 router = APIRouter(prefix='/wallets', tags=['Wallets'])
 
 @router.post("/add_money")

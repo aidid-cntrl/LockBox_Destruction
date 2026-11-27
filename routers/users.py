@@ -1,7 +1,6 @@
 
-from sqlite3 import IntegrityError
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError 
 from db import get_db
@@ -15,8 +14,6 @@ router = APIRouter(prefix='/accounts', tags=['Accounts'])
 
 @router.post("/create_account")
 async def create_account(data: incoming_account_request, db:AsyncSession = Depends(get_db)):
-
-    print("i am in endpoit Create_account")
 
     account =await db.scalar(select(Users).where(Users.email==data.email).with_for_update())
 
